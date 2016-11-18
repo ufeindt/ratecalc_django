@@ -1,0 +1,28 @@
+{% extends 'ratecalc/base.html' %}
+{% load staticfiles %}
+
+{% block title_block %}
+  Index
+{% endblock %}
+  
+{% block body_block %}
+
+    <div>
+      {% if transient_models %}
+        <h3>Available Models</h3>
+        <ul>
+          {% for tm in transient_models %}
+            <li>
+              {{ tm.description }}
+              <a href="{% url 'show_lightcurve' tm.name %}">Lightcurve</a>
+              <a href="{% url 'show_expected' tm.name %}">Expected Rate</a>
+              <a href="{% url 'show_redshift' tm.name %}">Redshift Distribution</a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <strong>There are no models available.</strong>
+      {% endif %}
+
+    </div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'ratecalc/base.html' %}
+{% load staticfiles %}
+
+{% block title_block %}
+  {{ tm.description }}
+{% endblock %}
+
+{% block body_block %}
+  <h1>{{ tm.description }}</h1>
+  <p>
+    <a href="{% url 'show_lightcurve' tm.name %}">Lightcurve</a>
+    <a href="{% url 'show_expected' tm.name %}">Expected Rate</a>
+    <a href="{% url 'show_redshift' tm.name %}">Redshift Distribution</a>
+  </p>
+  <div>
+    {% if tm.name %}
+      <form id="lightcurve_form" method="post" action="{% url action tm.name %}">
+        {% csrf_token %}
+        {% for hidden in form.hidden_fields %}
+          {{ hidden }}
+        {% endfor %}
+        {% for field in form.visible_fields %}
+          {{ field.errors }}
+          {{ field.help_text }}
+          {{ field }}<br />
+        {% endfor %}
+        <input type="submit" name="submit" value="Update" />
+      </form>
+
+      <div>
+        {% autoescape off %}
+          {{ plot }}
+        {% endautoescape %}
+      </div>
+    {% else %}
+      No transient model of that name is registered.
+    {% endif %}
+  </div>
+{% endblock %}
