@@ -102,8 +102,8 @@ def get_calc(request, tm_name, mag_start=None, **kw):
         transient_model.set(**{k: v for k, v in form.cleaned_data.items()
                                if k in transient_model.param_names})
 
-        if mag_start is not None:
-            mag_start = form.cleaned_data.pop('mag_start', mag_start)
+        #if mag_start is not None:
+        mag_start = form.cleaned_data.pop('mag_start', mag_start)
             
         for k, v in form.cleaned_data.items():
             if k not in transient_model.param_names:
