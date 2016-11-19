@@ -39,7 +39,7 @@ def show_lightcurve(request, tm_name):
         transient_model.set(**{k: v for k, v in form.cleaned_data.items()
                                if k in transient_model.param_names})
 
-        band = form.cleaned_data['bandpass']
+        band = form.cleaned_data['band']
         magsys = form.cleaned_data['magsys']
     else:
         band = 'bessellux'

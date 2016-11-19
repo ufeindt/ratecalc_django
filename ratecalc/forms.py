@@ -46,9 +46,8 @@ class LightcurveForm(TransientForm):
     def __init__(self,*args,**kwargs):
         super(LightcurveForm,self).__init__(*args,**kwargs)
 
-        self.fields['bandpass'] = forms.ChoiceField(choices=_bands,
-                                                    help_text='Band')
-                                                    #, initial='bessellb')
+        self.fields['band'] = forms.ChoiceField(choices=_bands,
+                                                help_text='Band')
         self.fields['magsys'] = forms.ChoiceField(choices=_magsys,
                                                   help_text='Magsys')
 
@@ -74,9 +73,8 @@ class ExpectedForm(TransientForm):
             help_text='t_before'
         )        
 
-        self.fields['bandpass'] = forms.ChoiceField(choices=_bands,
-                                                    help_text='Band')
-                                                    #, initial='bessellb')
+        self.fields['band'] = forms.ChoiceField(choices=_bands,
+                                                help_text='Band')
         self.fields['magsys'] = forms.ChoiceField(choices=_magsys,
                                                   help_text='Magsys')
 
