@@ -6,25 +6,40 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
-def plot_lightcurve(phase, mag):
+def plot_lightcurve(phase, mags, labels, mag_cut=10):
     fig = plt.Figure()
     ax = fig.add_subplot(111)
-    ax.plot(phase, mag)
+    for m_, l_ in zip(mags, labels):
+        ax.plot(phase, m_, label=l_)
     
     ax.set_xlim(np.min(phase), np.max(phase))
-    ax.set_ylim(ax.get_ylim()[::-1])
+
+    y_min = min([min(m_[~np.isnan(m_)]) for m_ in mags]) - 1
+    y_max = max([max(m_[~np.isnan(m_)]) for m_ in mags])
+    print [min(m_) for m_ in mags]
+    
+    if y_max - y_min > mag_cut:
+        y_max = y_min + mag_cut
+
+    print y_max, y_min
+    ax.set_ylim(y_max, y_min)
 
     ax.set_xlabel(r'$t - t_0 \mathrm{[days]}$', fontsize='x-large')
     ax.set_ylabel(r'mag', fontsize='x-large')
 
+    ax.legend(loc='upper center',
+              bbox_to_anchor=(.5, 1.15),
+              ncol=len(labels))
+    
     ax.grid(True)
     
     return make_svg_str(fig)
 
-def plot_expected(mag, n):
+def plot_expected(mag, n, labels):
     fig = plt.Figure()
     ax = fig.add_subplot(111)
-    ax.plot(mag, n)
+    for n_, l_ in zip(n, labels):
+        ax.plot(mag, n_, label=l_)
     
     ax.set_xlim(np.min(mag), np.max(mag))
     ax.set_yscale('log')
@@ -32,6 +47,10 @@ def plot_expected(mag, n):
     ax.set_xlabel('Limiting magnitude', fontsize='x-large')
     ax.set_ylabel('# expected transients per year', fontsize='x-large')
 
+    ax.legend(loc='upper center',
+              bbox_to_anchor=(.5, 1.15),
+              ncol=len(labels))
+    
     ax.grid(True)
     
     return make_svg_str(fig)

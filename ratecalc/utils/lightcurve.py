@@ -1,11 +1,13 @@
 import numpy as np
 
-def get_lightcurve(model, band, magsys, npoints=100):
+def get_lightcurves(model, bands, magsys, npoints=100):
     if npoints is None:
-        phase = model._source._phase * (1 + model.get('z')) + model.get('t0')
+        phase = model._source._phase * (1 + model.get('z'))
     else:
         phase = np.linspace(model.mintime(), model.maxtime(), npoints)
-        
-    mag = model.bandmag(band, magsys, phase)
+
+    mags = []
+    for b, ms in zip(bands, magsys):    
+        mags.append(model.bandmag(b, ms, phase))
     
-    return phase, mag
+    return phase, mags

@@ -1,6 +1,7 @@
 import copy
 
 from django import forms
+from django.utils.safestring import mark_safe
 #from ratecalc.models import TransientModels
 
 _magsys = (
@@ -22,12 +23,14 @@ _bands = (
     ('sdssz', 'SDSS z'),
 )
 
-_avalaible_fields = {
+_band_dict = {k: v for k, v in _bands}
+
+_available_fields = {
     'mag_start': forms.FloatField(initial=19, help_text='m_start'),
     'mag_lim': forms.FloatField(initial=24, help_text='m_lim'),        
-    't_before': forms.FloatField(initial=0.,help_text='t_before'),        
-    'first_band': forms.ChoiceField(choices=_bands[1:],help_text='Band'),
-    'band': forms.ChoiceField(choices=_bands,help_text='Band'),
+    't_before': forms.FloatField(initial=0.,help_text='t_before [days]'),        
+    'first_band': forms.ChoiceField(choices=_bands[1:],help_text=''),#'Band'),
+    'band': forms.ChoiceField(choices=_bands,help_text=''),#'Band'),
     'magsys': forms.ChoiceField(choices=_magsys, help_text=''),#'Magsys'),
     'mag_max': forms.FloatField(initial=-19.3, help_text='m_B_max (Vega)'),
     'mag_disp': forms.FloatField(initial=0.4, help_text='sig_m_B_max'),
@@ -56,11 +59,11 @@ class TransientForm(forms.Form):
             'amplitude': (0, None),
             'x0': (0, None)
         }
-        self.model_fields = []
+        self.form_blocks = [['Model parameters']]
         for name, value in zip(self.transient_model.param_names,
                                self.transient_model.parameters):
-            if name not in hide_param:
-                self.model_fields.append(name)
+            if name not in self.hide_param and name != 't0':
+                self.form_blocks[-1].append(['f:%s'%name])
                 min_max = min_max_vals.get(name, (None, None))
                 self.fields[name] = forms.FloatField(
                     min_value=min_max[0],
@@ -69,105 +72,58 @@ class TransientForm(forms.Form):
                     help_text=name
                 )
 
-        self.field_blocks = []
-                
-        self.fields['band'] = copy.copy(_avalaible_fields['first_band'])
-        self.fields['magsys'] = copy.copy(_avalaible_fields['mag_sys'])        
+        self.fields['band'] = copy.copy(_available_fields['first_band'])
+        self.fields['magsys'] = copy.copy(_available_fields['magsys'])        
         if self.n_bands > 1:
-            self.field_blocks.append(['band', 'magsys'])
+            self.form_blocks.append(['Bands', ['f:band', 'f:magsys']])
             for k in range(1, self.n_bands):
-                self.fields['band%i'%k] = copy.copy(_avalaible_fields['band'])
-                self.fields['magsys%i'%k] = copy.copy(_avalaible_fields['mag_sys'])
-                self.field_blocks[-1].extend(['band%i'%k, 'magsys%i'%k])
+                self.fields['band%i'%k] = copy.copy(_available_fields['band'])
+                self.fields['magsys%i'%k] = copy.copy(_available_fields['magsys'])
+                self.form_blocks[-1].append(['f:band%i'%k,'f:magsys%i'%k])
+        else:
+            self.form_blocks[-1].append(['Band','f:band', 'f:magsys'])
 
-        self.field_blocks.append([])
-        for name in self.include_fields:
-            self.fields[name] = copy.copy(_avalaible_fields[name])
-            self.field_blocks[-1].append(name)
+        if len(self.include_fields) > 0:
+            self.form_blocks.append(['Survey parameters'])
+            for name in self.include_fields:
+                self.fields[name] = copy.copy(_available_fields[name])
+                self.form_blocks[-1].append(['f:%s'%name])
 
-            if name in self.field_defaults.keys():
-                self.fields[name].initial = self.field_defaults[name]
+                if name in self.field_defaults.keys():
+                    self.fields[name].initial = self.field_defaults[name]
 
-    def model_fields_generator(self):
-        for name in self.model_fields:
-            yield self.fields[name]
-        
-    def field_blocks_generator(self):
-        for block in self.field_blocks:
-            yield self.field_block_generator(block)
-        
-    def field_block_generator(self, block):
+
+    def headers(self):
+        for block in self.form_blocks:
+            yield block[0]
+            
+    def rows(self):
+        k_max = max([len(block) for block in self.form_blocks])
+        for k in range(1, k_max):
+            yield self.yield_blocks(k)
+
+    def yield_blocks(self, k):
+        for l in range(len(self.form_blocks)):
+            if k < len(self.form_blocks[l]):
+                block = self.prep_block(self.form_blocks[l][k])
+                yield block
+            else:
+                yield []
+            
+    def prep_block(self, block):
+        out = []
         for name in block:
-            yield self.fields[name]
-                
-class TransientFormOld(forms.Form):
-    """
-    Basic form for setting the transient model parameter
-    """
-    def __init__(self,*args,**kwargs):
-        self.transient_model = kwargs.pop('transient_model')
-        super(TransientFormOld,self).__init__(*args,**kwargs)
+            if name.startswith('f:'):
+                name = name[2:]
+                #if self.fields[name].errors:
+                #    out.append(self.fields[name].errors)
+                out.extend([self.fields[name].help_text,
+                            self[name]])
+            else:
+                out.append(name)
 
-        min_max_vals = {
-            'z': (0, None),
-            'amplitude': (0, None),
-            'x0': (0, None)
-        }
-        for name, value in zip(self.transient_model.param_names,
-                               self.transient_model.parameters):
-            min_max = min_max_vals.get(name, (None, None))
-            self.fields[name] = forms.FloatField(
-                min_value=min_max[0],
-                max_value=min_max[1],
-                initial=value,
-                help_text=name
-            )
+        return out
 
-class LightcurveForm(TransientFormOld):
-    def __init__(self,*args,**kwargs):
-        super(LightcurveForm,self).__init__(*args,**kwargs)
-
-        self.fields['band'] = forms.ChoiceField(choices=_bands,
-                                                help_text='Band')
-        self.fields['magsys'] = forms.ChoiceField(choices=_magsys,
-                                                  help_text='Magsys')
-
-
-class ExpectedForm(TransientFormOld):
-    def __init__(self,*args,**kwargs):
-        self.mag_max = kwargs.pop('mag_max', -19.3)
-        self.mag_disp = kwargs.pop('mag_disp', 0.4)
-        self.rate = kwargs.pop('rate', 3e-5)
-        
-        super(ExpectedForm,self).__init__(*args,**kwargs)
-
-        self.fields['mag_start'] = forms.FloatField(
-            initial=19,
-            help_text='m_start'
-        )        
-        self.fields['mag_lim'] = forms.FloatField(
-            initial=24,
-            help_text='m_lim'
-        )        
-        self.fields['t_before'] = forms.FloatField(
-            initial=0.,
-            help_text='t_before'
-        )        
-
-        self.fields['band'] = forms.ChoiceField(choices=_bands,
-                                                help_text='Band')
-        self.fields['magsys'] = forms.ChoiceField(choices=_magsys,
-                                                  help_text='Magsys')
-
-        self.fields['mag_max'] = forms.FloatField(
-            initial=self.mag_max,
-            help_text='m_B_max (Vega)'
-        )
-        self.fields['mag_disp'] = forms.FloatField(
-            initial=self.mag_disp,
-            help_text='sig_m_B_max'
-        )
-        self.fields['rate'] = forms.FloatField(
-            initial=self.rate,
-            help_text='Rate [Mpc^-3 yr^-1]'
-        )
+    def yield_block(self, block):
+        for field in block:
+            yield field
