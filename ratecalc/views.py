@@ -5,7 +5,7 @@ from django.shortcuts     import render
 from django.core.urlresolvers import resolve
 
 from ratecalc.models      import TransientModels
-from ratecalc.forms       import LightcurveForm, ExpectedForm, TransientForm, _band_dict
+from ratecalc.forms       import TransientForm, _band_dict
 
 from utils.lightcurve     import get_lightcurves
 from utils.plot           import plot_lightcurve, plot_expected, plot_redshift
