@@ -21,6 +21,15 @@ _bands = (
     ('sdssr', 'SDSS r'),
     ('sdssi', 'SDSS i'),
     ('sdssz', 'SDSS z'),
+    ('lsstu', 'LSST u'),
+    ('lsstg', 'LSST g'),
+    ('lsstr', 'LSST r'),
+    ('lssti', 'LSST i'),
+    ('lsstz', 'LSST z'),
+    ('lssty', 'LSST y'),
+    ('2masslj', '2MASS J'),
+    ('2masslh', '2MASS H'),
+    ('2masslk', '2MASS K'),
 )
 
 _band_dict = {k: v for k, v in _bands}
@@ -37,7 +46,7 @@ _available_fields = {
     'first_band': forms.ChoiceField(choices=_bands[1:],help_text=''),#'Band'),
     'band': forms.ChoiceField(choices=_bands,help_text=''),#'Band'),
     'magsys': forms.ChoiceField(choices=_magsys, help_text=''),#'Magsys'),
-    'mag_max': forms.FloatField(initial=-19.3, help_text=''),#'M_peak'),
+    'mag_max': forms.FloatField(initial=0., help_text=''),#'M_peak'),
     'mag_disp': forms.FloatField(initial=0.4, help_text='M_peak dispersion'),
     'rate': forms.FloatField(initial=3e-5, help_text='Rate [Mpc^-3 yr^-1]'),
     'scale_amplitude': forms.BooleanField(required=False, initial=True,
@@ -67,7 +76,9 @@ class TransientForm(forms.Form):
         for k in _available_fields.keys():
             if k in kwargs.keys():
                 self.field_defaults[k] = kwargs.pop(k)
-        
+
+        print self.field_defaults
+                
         super(TransientForm, self).__init__(*args, **kwargs)
 
         min_max_vals = {
@@ -104,7 +115,9 @@ class TransientForm(forms.Form):
                 _available_fields['scale_amplitude']
             )
             self.form_blocks[-1].append(['f:scale_amplitude'])
-
+            if self.scale_mode == 'rate':
+                self.fields['scale_amplitude'].initial = False
+            
         if self.scale_mode == 'lc':
             self.fields['scaling_mode'] = copy.copy(
                 _available_fields['scaling_mode']

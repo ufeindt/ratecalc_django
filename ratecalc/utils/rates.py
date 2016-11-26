@@ -28,6 +28,8 @@ import warnings
 #_cosmo = FlatLambdaCDM(Om0=0.3, H0=70.)
 _cosmo = Planck15
 
+from filters import load_filters
+
 ############################
 #                          #
 # Main rates class         #
@@ -62,7 +64,9 @@ class RateCalculator(object):
         self.amp_or_x0 = ('amplitude'
                           if 'amplitude' in model.param_names
                           else 'x0')
- 
+
+        load_filters()
+        
         if load is False:
             self.band = band
             self.magsys = magsys
