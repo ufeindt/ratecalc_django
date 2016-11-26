@@ -10,7 +10,7 @@ from ratecalc.forms       import TransientForm, _band_dict
 from utils.lightcurve     import get_lightcurves
 from utils.plot           import plot_lightcurve, plot_expected, plot_redshift
 from utils.rates          import RateCalculator
-from utils.transientmodel import get_transient_model
+from utils.transientmodel import get_transient_model, scale_model
 
 
 # Create your views here.
@@ -27,7 +27,8 @@ def about(request):
 def show_lightcurve(request, tm_name, n_bands=5):
     context = get_calc(request, tm_name,
                        [], n_bands=n_bands,
-                       band='bessellux', magsys='ab')
+                       band='bessellux', magsys='ab',
+                       scale_mode='lc')
 
     bands = [context['calc_kw']['band']]
     magsys = [context['calc_kw']['magsys']]
@@ -42,25 +43,40 @@ def show_lightcurve(request, tm_name, n_bands=5):
     labels = [_band_dict[b] for b in bands]
 
     transient_model = context['calc_args'][0]
-    phase, mags = get_lightcurves(transient_model, bands, magsys)
-    plot = plot_lightcurve(phase, mags, labels)
+    if context['scale_opt']['scale_amplitude']:
+        if context['scale_opt']['scaling_mode'] == 'z':
+            transient_model = scale_model(transient_model)
+        elif context['scale_opt']['scaling_mode'] == 'abs_mag':
+            transient_model = scale_model(
+                transient_model,
+                mag=context['calc_kw']['mag_max'][0],
+                band=context['calc_kw']['mag_max'][1],
+                magsys=context['calc_kw']['mag_max'][2]
+            )
 
+    try:
+        phase, mags = get_lightcurves(transient_model, bands, magsys)
+        plot = plot_lightcurve(phase, mags, labels)
+    except ValueError as e:
+        plot = 'Error: %s'%e
+        
     context['plot'] = plot
         
     return render(request, 'ratecalc/form_plot.html', context)
     
 def show_expected(request, tm_name, n_bands=5):
     context = get_calc(request, tm_name,
-                       ['mag_start', 'mag_lim', 't_before',
-                        'rate', 'mag_max', 'mag_disp'],
+                       ['area', 'time', 'rate',
+                        'mag_start', 'mag_lim', 't_before',
+                        'mag_disp'],
                        hide_param=['z'], band='bessellux', magsys='ab',
-                       mag_start=19., mag_lim=24., t_before=0., n_bands=n_bands)
+                       mag_start=19., mag_lim=24., t_before=0., n_bands=n_bands,
+                       scale_mode='rate')
 
     add_bands = [context['calc_kw'].pop('band%i'%k, 'None')
                  for k in range(1, n_bands)]
     add_magsys = [context['calc_kw'].pop('magsys%i'%k, 'ab')
                   for k in range(1, n_bands)]
-    
     
     calc = RateCalculator(*context['calc_args'], **context['calc_kw'])
     
@@ -89,10 +105,11 @@ def show_expected(request, tm_name, n_bands=5):
 
 def show_redshift(request, tm_name):
     context = get_calc(request, tm_name,
-                       ['mag_lim', 't_before',
-                        'rate', 'mag_max', 'mag_disp'],
+                       ['area', 'time', 'rate',
+                        'mag_start', 'mag_lim', 't_before',
+                        'mag_disp'],
                        hide_param=['z'], band='bessellux', magsys='ab',
-                       mag_lim=24., t_before=0.)
+                       mag_lim=24., t_before=0., scale_mode='rate')
 
     calc = RateCalculator(*context['calc_args'], **context['calc_kw'])
     
@@ -105,23 +122,29 @@ def show_redshift(request, tm_name):
     
     
 def get_calc(request, tm_name, include_fields, mag_start=None, hide_param=None,
-             n_bands=1, **kw):
+             n_bands=1, scale_mode='lc', **kw):
     if hide_param is None:
         hide_param = []
         
     tm = TransientModels.objects.get(name=tm_name)
-    transient_model = get_transient_model(tm.sncosmo_name)
-    calc_kw = {'mag_max': tm.m_B_max,
+    
+    transient_model = get_transient_model(tm.sncosmo_name, M_B_max=tm.m_B_max)
+    calc_kw = {'mag_max': None,
                'mag_disp': tm.sig_m_B_max,
                'rate': tm.rate}
+
+    scale_opt = {'scale_amplitude': False,
+                 'scaling_mode': 'z'}
     
     form = TransientForm(transient_model=transient_model, hide_param=hide_param,
-                         n_bands=n_bands, include_fields=include_fields, **calc_kw)
+                         n_bands=n_bands, include_fields=include_fields,
+                         scale_mode=scale_mode, **calc_kw)
         
     if request.method == 'POST':
         form = TransientForm(request.POST, transient_model=transient_model,
                              hide_param=hide_param, n_bands=n_bands,
-                             include_fields=include_fields, **calc_kw)
+                             include_fields=include_fields, scale_mode=scale_mode,
+                             **calc_kw)
 
         if not form.is_valid():
             print(form.errors)
@@ -131,6 +154,17 @@ def get_calc(request, tm_name, include_fields, mag_start=None, hide_param=None,
 
         #if mag_start is not None:
         mag_start = form.cleaned_data.pop('mag_start', mag_start)
+
+        for k in scale_opt.keys():
+            if k in form.cleaned_data.keys():
+                scale_opt[k] = form.cleaned_data.pop(k)
+        
+        if 'mag_max' in form.cleaned_data.keys():
+            calc_kw['mag_max'] = (
+                form.cleaned_data.pop('mag_max'),
+                form.cleaned_data.pop('band_max'),
+                form.cleaned_data.pop('magsys_max'),
+            )
             
         for k, v in form.cleaned_data.items():
             if k not in transient_model.param_names:
@@ -142,9 +176,13 @@ def get_calc(request, tm_name, include_fields, mag_start=None, hide_param=None,
     rate = calc_kw.pop('rate')
     calc_kw['ratefunc'] = lambda z: rate
 
+    if not scale_opt['scale_amplitude']:
+        calc_kw['mag_max'] = None
+
     context = {'tm': tm, 'form': form, 'mag_start': mag_start,
                'action': resolve(request.path_info).url_name,
-               'calc_kw': calc_kw, 'calc_args': (transient_model, )}
+               'calc_kw': calc_kw, 'calc_args': (transient_model, ),
+               'scale_opt': scale_opt}
     
     return context
 

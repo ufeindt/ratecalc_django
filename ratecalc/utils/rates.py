@@ -51,18 +51,25 @@ class RateCalculator(object):
                  cosmo=_cosmo,
                  logz_start=-3.5, logz_step=0.05, 
                  ratefunc=(lambda z: 3e-7),
-                 load=False):
+                 load=False,
+                 area=100.,
+                 time=365.25):
         """
         """
         self.model = copy.copy(model)
         self.cosmo = cosmo
         self.ratefunc = ratefunc
+        self.amp_or_x0 = ('amplitude'
+                          if 'amplitude' in model.param_names
+                          else 'x0')
  
         if load is False:
             self.band = band
             self.magsys = magsys
             self.mag_disp = mag_disp
             self.sigma_cut = sigma_cut
+            self.area = area
+            self.time = time
 
             if mag_disp is None:
                 self.mag_lim = mag_lim
@@ -170,7 +177,8 @@ class RateCalculator(object):
         z_max = self.f_z_mag(mag + (self.sigma_cut*self.mag_disp
                                     if self.mag_disp is not None
                                     else 0))
-        sh_rate, z = shell_rate(0., z_max, self.ratefunc, nbins, self.cosmo)
+        sh_rate, z = shell_rate(0., z_max, self.ratefunc, nbins, self.cosmo,
+                                time=self.time, area=self.area/100.)
 
         if self.mag_disp is not None:
             sh_rate *= cdf_gauss(self.mag_lim, self.f_mag_z(z), self.mag_disp)
@@ -188,7 +196,8 @@ class RateCalculator(object):
         #print z_max
         
         nbins = int(z_max / z_step)
-        sh_rate, z = shell_rate(0., nbins*z_step, self.ratefunc, nbins, self.cosmo)
+        sh_rate, z = shell_rate(0., nbins*z_step, self.ratefunc, nbins, self.cosmo,
+                                time=self.time, area=self.area/100.)
         
         if self.mag_disp is not None:
             sh_rate *= cdf_gauss(mag, self.f_mag_z(z), self.mag_disp)
@@ -208,7 +217,7 @@ class RateCalculator(object):
         model.set(z=z)
         if self.mag_max is None:
             d_l = self.cosmo.luminosity_distance(z).value * 1e5
-            model.set(amplitude=model.get('amplitude')*d_l**-2)
+            model.set(**{self.amp_or_x0: model.get(self.amp_or_x0)*d_l**-2})
         else:
             model.set_source_peakabsmag(*self.mag_max, cosmo=self.cosmo)
 
@@ -330,16 +339,17 @@ def bisection(f, x0, x1, tol=1e-5, nmax=100):
     return False
 
 def shell_rate(zmin, zmax, ratefunc=(lambda z: 3e-7),
-               nbins=100, cosmo=_cosmo):
+               nbins=100, cosmo=_cosmo, time=365.25, area=1.):
     """
     rate in Mpc^-3 yr^-1
     
     returns shell rate and bin centers
     """
+    f = time / 365.25 * area
     z_binedges = np.linspace(zmin, zmax, nbins + 1)
     z_binctrs = 0.5 * (z_binedges[1:] + z_binedges[:-1])
     sphere_vols = cosmo.comoving_volume(z_binedges).value
     shell_vols = sphere_vols[1:] - sphere_vols[:-1]
     
-    return (shell_vols * ratefunc(z_binctrs) / (1.+z_binctrs),
+    return (f * shell_vols * ratefunc(z_binctrs) / (1.+z_binctrs),
             z_binctrs)

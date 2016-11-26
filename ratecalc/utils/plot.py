@@ -16,12 +16,10 @@ def plot_lightcurve(phase, mags, labels, mag_cut=10):
 
     y_min = min([min(m_[~np.isnan(m_)]) for m_ in mags]) - 1
     y_max = max([max(m_[~np.isnan(m_)]) for m_ in mags])
-    print [min(m_) for m_ in mags]
     
     if y_max - y_min > mag_cut:
         y_max = y_min + mag_cut
 
-    print y_max, y_min
     ax.set_ylim(y_max, y_min)
 
     ax.set_xlabel(r'$t - t_0 \mathrm{[days]}$', fontsize='x-large')
@@ -45,7 +43,7 @@ def plot_expected(mag, n, labels):
     ax.set_yscale('log')
 
     ax.set_xlabel('Limiting magnitude', fontsize='x-large')
-    ax.set_ylabel('# expected transients per year', fontsize='x-large')
+    ax.set_ylabel('# expected transients', fontsize='x-large')
 
     ax.legend(loc='upper center',
               bbox_to_anchor=(.5, 1.15),
@@ -63,7 +61,7 @@ def plot_redshift(z, n, width=0.01):
     ax.set_xlim(np.min(z)-width/2., np.max(z)+width/2.)
 
     ax.set_xlabel('Redshift', fontsize='x-large')
-    ax.set_ylabel('# expected transients per year', fontsize='x-large')
+    ax.set_ylabel('# expected transients', fontsize='x-large')
 
     ax.grid(True)
     

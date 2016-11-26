@@ -1,6 +1,6 @@
 import numpy as np
 
-def get_lightcurves(model, bands, magsys, npoints=100):
+def get_lightcurves(model, bands, magsys, npoints=None):
     if npoints is None:
         phase = model._source._phase * (1 + model.get('z'))
     else:
