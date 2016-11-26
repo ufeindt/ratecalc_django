@@ -12,6 +12,7 @@
     <a href="{% url 'show_expected' tm.name %}">Expected Rate</a>
     <a href="{% url 'show_redshift' tm.name %}">Redshift Distribution</a>
   </p>
+  <p><a href="{% url 'index' %}">Return to model selection</a>
   <div>
     {% if tm.name %}
       <form id="lightcurve_form" method="post" action="{% url action tm.name %}">
