@@ -4,7 +4,7 @@ import numpy as np
 from django.shortcuts     import render
 from django.core.urlresolvers import resolve
 
-from ratecalc.models      import TransientModels
+from ratecalc.models      import TransientModel
 from ratecalc.forms       import TransientForm, _band_dict
 
 from utils.lightcurve     import get_lightcurves
@@ -16,7 +16,7 @@ from utils.transientmodel import get_transient_model, scale_model
 # Create your views here.
 
 def index(request):
-    tm_list = TransientModels.objects.all()
+    tm_list = TransientModel.objects.all()
     context_dict = {'transient_models': tm_list}
     
     return render(request, 'ratecalc/index.html', context=context_dict)
@@ -126,12 +126,17 @@ def get_calc(request, tm_name, include_fields, mag_start=None, hide_param=None,
     if hide_param is None:
         hide_param = []
         
-    tm = TransientModels.objects.get(name=tm_name)
+    tm = TransientModel.objects.get(name=tm_name)
+
+    transient_model = get_transient_model(model_type=tm.category.model_type,
+                                          sncosmo_name=tm.sncosmo_name,
+                                          amplitude=tm.default_amplitude,
+                                          model_file=tm.model_file,
+                                          host_extinction=tm.host_extinction)
     
-    transient_model = get_transient_model(tm.sncosmo_name, M_B_max=tm.m_B_max)
     calc_kw = {'mag_max': None,
-               'mag_disp': tm.sig_m_B_max,
-               'rate': tm.rate}
+               'mag_disp': tm.transient_type.sig_m_B_max,
+               'rate': tm.transient_type.rate}
 
     scale_opt = {'scale_amplitude': False,
                  'scaling_mode': 'z'}
