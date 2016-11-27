@@ -23,7 +23,7 @@ def populate():
     types['SN Ia'] = {'m_B_max': -19.25, 'sig_m_B_max': 0.5, 'rate': 3e-5}
     types['SN Ib'] = {'m_B_max': -17.45, 'sig_m_B_max': 1.12, 'rate': 1e-5}
     types['SN Ic'] = {'m_B_max': -17.66, 'sig_m_B_max': 1.18, 'rate': 1e-5}
-    types['SN IIb'] = {'m_B_max': -16.99, 'sig_m_B_max': 0.92, 'rate': 1e-5}
+    #types['SN IIb'] = {'m_B_max': -16.99, 'sig_m_B_max': 0.92, 'rate': 1e-5}
     #types['SN IIL'] = {'m_B_max': -17.98, 'sig_m_B_max': 0.86, 'rate': 1e-5}
     types['SN IIP'] = {'m_B_max': -16.75, 'sig_m_B_max': 0.98, 'rate': 1.5e-4}
     types['SN IIn'] = {'m_B_max': -18.53, 'sig_m_B_max': 1.36, 'rate': 1e-5}
