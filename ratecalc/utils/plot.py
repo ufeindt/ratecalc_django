@@ -6,7 +6,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
-def plot_lightcurve(phase, mags, labels, mag_cut=10):
+def plot_lightcurve(phase, mags, labels, mag_cut=20):
     fig = plt.Figure()
     ax = fig.add_subplot(111)
     for m_, l_ in zip(mags, labels):

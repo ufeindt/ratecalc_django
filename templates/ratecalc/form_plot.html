@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block body_block %}
-  <h1>{{ tm.description }}</h1>
+  <h1>{{ tm.transient_type }} {{ tm.description }}</h1>
   <p>
     <a href="{% url 'show_lightcurve' tm.name %}">Lightcurve</a>
     <a href="{% url 'show_expected' tm.name %}">Expected Rate</a>

@@ -4,7 +4,7 @@ import numpy as np
 from django.shortcuts     import render
 from django.core.urlresolvers import resolve
 
-from ratecalc.models      import TransientModel
+from ratecalc.models      import TransientModel, TransientType
 from ratecalc.forms       import TransientForm, _band_dict
 
 from utils.lightcurve     import get_lightcurves
@@ -17,7 +17,9 @@ from utils.transientmodel import get_transient_model, scale_model
 
 def index(request):
     tm_list = TransientModel.objects.all()
-    context_dict = {'transient_models': tm_list}
+    type_list = TransientType.objects.all()
+    
+    context_dict = {'transient_models': tm_list, 'types': type_list}
     
     return render(request, 'ratecalc/index.html', context=context_dict)
 
@@ -106,7 +108,7 @@ def show_expected(request, tm_name, n_bands=5):
 def show_redshift(request, tm_name):
     context = get_calc(request, tm_name,
                        ['area', 'time', 'rate',
-                        'mag_start', 'mag_lim', 't_before',
+                        'mag_lim', 't_before',
                         'mag_disp'],
                        hide_param=['z'], band='bessellux', magsys='ab',
                        mag_lim=24., t_before=0., scale_mode='rate')
@@ -134,7 +136,7 @@ def get_calc(request, tm_name, include_fields, mag_start=None, hide_param=None,
                                           model_file=tm.model_file,
                                           host_extinction=tm.host_extinction)
     
-    calc_kw = {'mag_max': None,
+    calc_kw = {'mag_max': tm.transient_type.m_B_max,
                'mag_disp': tm.transient_type.sig_m_B_max,
                'rate': tm.transient_type.rate}
 

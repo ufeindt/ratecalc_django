@@ -107,8 +107,6 @@ class TransientForm(forms.Form):
                 self.fields['band%i'%k] = copy.copy(_available_fields['band'])
                 self.fields['magsys%i'%k] = copy.copy(_available_fields['magsys'])
                 band_block.append(['f:band%i'%k,'f:magsys%i'%k])
-        else:
-            self.form_blocks[-1].append(['Band','f:band', 'f:magsys'])
 
         if self.scale_mode in ['lc', 'rate']:
             self.fields['scale_amplitude'] = copy.copy(
@@ -136,6 +134,8 @@ class TransientForm(forms.Form):
             
         if len(self.include_fields) > 0:
             self.form_blocks.append(['Survey parameters'])
+            if self.n_bands == 1:
+                self.form_blocks[-1].append(['Band', 'f:band', 'f:magsys'])
             for name in self.include_fields:
                 self.fields[name] = copy.copy(_available_fields[name])
                 self.form_blocks[-1].append(['f:%s'%name])

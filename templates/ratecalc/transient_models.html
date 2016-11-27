@@ -1,0 +1,14 @@
+<ul>
+  {% if transient_models %}
+    {% for tm in transient_models %}
+      <li>
+        {{ tm.description }}
+        <a href="{% url 'show_lightcurve' tm.name %}">Lightcurve</a>
+        <a href="{% url 'show_expected' tm.name %}">Expected Rate</a>
+        <a href="{% url 'show_redshift' tm.name %}">Redshift Distribution</a>
+      </li>
+    {% endfor %}
+  {% else %}
+    <li> <strong>There are no models for this type.</strong></li>
+  {% endif %}
+</ul>

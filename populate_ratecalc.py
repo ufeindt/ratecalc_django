@@ -27,7 +27,7 @@ def populate():
     types['SN IIL'] = {'m_B_max': -17.98, 'sig_m_B_max': 0.86, 'rate': 1e-5}
     types['SN IIP'] = {'m_B_max': -16.75, 'sig_m_B_max': 0.98, 'rate': 1.5e-4}
     types['SN IIn'] = {'m_B_max': -18.53, 'sig_m_B_max': 1.36, 'rate': 1e-5}
-    types['Macronova'] = {'m_B_max': -10.0, 'sig_m_B_max': 0., 'rate': 3e-7}
+    types['Macronova'] = {'sig_m_B_max': 0., 'rate': 3e-7}
             
     models = odict()
     models['salt2'] = {
@@ -44,14 +44,24 @@ def populate():
         #'2006lc', '04d1la', '04d4jv', '2004gv', '2006ep',
         #'2007y', '2004ib', '2005hm', '2006jo', '2007nc',
         '2004hx',
-        #'2005gi', '2006gq', '2006kn', '2006jl'
+        #'2005gi', '2006gq', '2006kn', '2006jl',
+        #'2006iw', '2006kv', '2006ns', '2007iz', '2007nr',
+        #'2007kw', '2007ky', '2007lj', '2007lb', '2007ll',
+        #'2007nw', '2007ld', '2007md', '2007lz', '2007lx',
+        #'2007og', '2007ny', '2007nv', '2007pg', '2006ez',
+        #'2006ix', 
     ]
     snana_types = [
         #'SN Ic', 'SN Ic', 'SN Ic', 'SN Ic', 'SN Ic',
         #'SN Ic', 'SN Ic', 'SN Ic', 'SN Ib', 'SN Ib',
         #'SN Ib', 'SN Ib', 'SN Ib', 'SN Ib', 'SN Ib',
         'SN IIP',
-        #'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP'
+        #'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP',
+        #'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP'
+        #'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP',
+        #'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP',
+        #'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP', 'SN IIn',
+        #'SN IIn',
     ]
 
     for snana_name, snana_type in zip(snana_names, snana_types):
@@ -60,6 +70,24 @@ def populate():
             'sncosmo_name': 'snana-%s'%snana_name,
             'sncosmo_version': '1.0',
             'transient_type': snana_type,
+            'category': 'sncosmo-built-in',
+        }
+
+    s11_names = [
+        #'2005lc', '2005hl', '2005hm', '2005gi', '2006fo',
+        #'2006jo', '2006jl', 
+    ]
+    s11_types = [
+        #'SN IIP', 'SN Ib', 'SN Ib', 'SN IIP', 'SN Ic',
+        #'SN Ib', 'SN IIP',
+    ]
+
+    for s11_name, s11_type in zip(s11_names, s11_types):
+        models['s11-%s'%snana_name] = {
+            'description':  'S11 %s'%snana_name,
+            'sncosmo_name': 's11-%s'%snana_name,
+            'sncosmo_version': '1.0',
+            'transient_type': s11_type,
             'category': 'sncosmo-built-in',
         }
     
