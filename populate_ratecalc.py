@@ -55,7 +55,7 @@ def populate():
         'SN Ic', 'SN Ic', 'SN Ic', 'SN Ib', 'SN Ib',
         'SN Ib', 'SN Ib', 'SN Ib', 'SN Ib', 'SN Ib',
         'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP',
-        'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP'
+        'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP',
         'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP',
         'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP',
         'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP', 'SN IIn',
@@ -98,6 +98,7 @@ def populate():
         t[name] = add_type(name, **kw)
     
     for name, kw in models.items():
+        print("- {0}".format(name))
         add_model(name, c[kw.pop('category')], t[kw.pop('transient_type')], **kw)
 
     mn_dir = 'ratecalc/utils/macronova'
