@@ -10,10 +10,15 @@
     <h1>Transient Rate Calculator</h1>
     <div>
       {% if transient_models %}
-      <h3>Available Models</h3>
-        {% for t in types %}
-          <h4>{{ t }}</h4>
-          {% get_tm_list t %}
+        <h3>Available Models</h3>
+        <p>(click transient type to reveal models)</p>
+          {% for t in types %}
+          <span style="cursor: pointer;" onclick="spoilerBody = typeof this.nextSibling.tagName != 'undefined' ? this.nextSibling : this.nextSibling.nextSibling; spoilerBody.style.display = 'block' == spoilerBody.style.display ? 'none' : 'block';">
+            <strong>{{ t }}</strong>
+          </span>
+          <div style="display: none;">
+            {% get_tm_list t %}
+          </div><br/>
         {% endfor %}
       {% else %}
         <strong>There are no models available.</strong>
