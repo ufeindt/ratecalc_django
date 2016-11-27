@@ -81,9 +81,9 @@ def populate():
     ]
 
     for s11_name, s11_type in zip(s11_names, s11_types):
-        models['s11-%s'%snana_name] = {
-            'description':  'S11 %s'%snana_name,
-            'sncosmo_name': 's11-%s'%snana_name,
+        models['s11-%s'%s11_name] = {
+            'description':  'S11 %s'%s11_name,
+            'sncosmo_name': 's11-%s'%s11_name,
             'sncosmo_version': '1.0',
             'transient_type': s11_type,
             'category': 'sncosmo-built-in',
