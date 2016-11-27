@@ -9,53 +9,60 @@ from ratecalc.utils.transientmodel import get_transient_model, scale_model
 from collections import OrderedDict as odict
 
 def populate():
-    categories = {
-        'sncosmo-built-in': {
-            'description': 'sncosmo built-in models',
-            'model_type': 'built-in'
-        },
-        'mne-rosswog-et-al': {
-            'description': 'Macronova SEDs from Rosswog et al. (in prep.)',
-            'model_type': 'load-file'
-        },
+    categories = odict()
+    categories['sncosmo-built-in'] = {
+        'description': 'sncosmo built-in models',
+        'model_type': 'built-in'
+    }
+    categories['mne-rosswog-et-al'] = {
+        'description': 'Macronova SEDs from Rosswog et al. (in prep.)',
+        'model_type': 'load-file'
     }
     
-    types = {
-        'SN Ia': {
-            'm_B_max': -19.3,
-            'sig_m_B_max': 0.4,
-            'rate': 3e-5,        
-        },
-        'SN IIP': {
-            'm_B_max': -16.75,
-            'sig_m_B_max': 0.98,
-            'rate': 1.5e-4,
-        },
-        'Macronova': {
-            'm_B_max': -10.0,
-            'sig_m_B_max': 0.,
-            'rate': 3e-7,
-        },
-    }
+    types = odict()
+    types['SN Ia'] = {'m_B_max': -19.25, 'sig_m_B_max': 0.5, 'rate': 3e-5}
+    types['SN Ib'] = {'m_B_max': -17.45, 'sig_m_B_max': 1.12, 'rate': 1e-5}
+    types['SN Ic'] = {'m_B_max': -17.66, 'sig_m_B_max': 1.18, 'rate': 1e-5}
+    types['SN IIb'] = {'m_B_max': -16.99, 'sig_m_B_max': 0.92, 'rate': 1e-5}
+    types['SN IIL'] = {'m_B_max': -17.98, 'sig_m_B_max': 0.86, 'rate': 1e-5}
+    types['SN IIP'] = {'m_B_max': -16.75, 'sig_m_B_max': 0.98, 'rate': 1.5e-4}
+    types['SN IIn'] = {'m_B_max': -18.53, 'sig_m_B_max': 1.36, 'rate': 1e-5}
+    types['Macronova'] = {'m_B_max': -10.0, 'sig_m_B_max': 0., 'rate': 3e-7}
             
-    models = {
-        'salt2': {
-            'description': 'SALT2.4',
-            'sncosmo_name': 'salt2',
-            'sncosmo_version': '2.4',
-            'transient_type': 'SN Ia',
-            'category': 'sncosmo-built-in',
-            'host_extinction': False,
-        },
-        'snana-2004hx': {
-            'description':  'SNANA 2004hx',
-            'sncosmo_name': 'snana-2004hx',
-            'sncosmo_version': '1.0',
-            'transient_type': 'SN IIP',
-            'category': 'sncosmo-built-in',
-        }
+    models = odict()
+    models['salt2'] = {
+        'description': 'SALT2.4',
+        'sncosmo_name': 'salt2',
+        'sncosmo_version': '2.4',
+        'transient_type': 'SN Ia',
+        'category': 'sncosmo-built-in',
+        'host_extinction': False,
     }
 
+    snana_names = [
+        #'2004fe', '2004gq', 'sdss004012', '2006fo', 'sdss014475',
+        #'2006lc', '04d1la', '04d4jv', '2004gv', '2006ep',
+        #'2007y', '2004ib', '2005hm', '2006jo', '2007nc',
+        '2004hx',
+        #'2005gi', '2006gq', '2006kn', '2006jl'
+    ]
+    snana_types = [
+        #'SN Ic', 'SN Ic', 'SN Ic', 'SN Ic', 'SN Ic',
+        #'SN Ic', 'SN Ic', 'SN Ic', 'SN Ib', 'SN Ib',
+        #'SN Ib', 'SN Ib', 'SN Ib', 'SN Ib', 'SN Ib',
+        'SN IIP',
+        #'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP'
+    ]
+
+    for snana_name, snana_type in zip(snana_names, snana_types):
+        models['snana-%s'%snana_name] = {
+            'description':  'SNANA %s'%snana_name,
+            'sncosmo_name': 'snana-%s'%snana_name,
+            'sncosmo_version': '1.0',
+            'transient_type': snana_type,
+            'category': 'sncosmo-built-in',
+        }
+    
     c = {}
     for name, kw in categories.items():
         c[name] = add_category(name, **kw)
@@ -68,12 +75,48 @@ def populate():
         add_model(name, c[kw.pop('category')], t[kw.pop('transient_type')], **kw)
 
     mn_dir = 'ratecalc/utils/macronova'
-    mn_files = ['SED_DZ31_NSBH3.dat', 'SED_wind20.dat']
-    mn_names = ['mn-nsbh3-dz31', 'mn-wind20']
-    mn_descriptions = [
-        'ns12b7 (B3, MNmodel2, DZ31, kappa = 10 cm^2/g)',
-        'wind20 (kappa = 1 cm^2/g)'
+    mn_files = [
+        'SED_DZ31_ns12ns12.dat',
+        'SED_DZ31_ns13ns13.dat',
+        'SED_DZ31_ns14ns14.dat',
+        'SED_DZ31_ns12ns14.dat',
+        'SED_DZ31_ns14ns18.dat',
+        'SED_DZ31_NSBH1.dat',
+        'SED_DZ31_NSBH2.dat',
+        'SED_DZ31_NSBH3.dat',
+        'SED_DZ31_NSBH3_kappa100.dat',
     ]
+    mn_names = [
+        'mn-ns12n12-dz31',
+        'mn-ns13n13-dz31',
+        'mn-ns14n14-dz31',
+        'mn-ns12n14-dz31',
+        'mn-ns14n18-dz31',        
+        'mn-nsbh1-dz31',
+        'mn-nsbh2-dz31',
+        'mn-nsbh3-dz31',
+        'mn-nsbh3-dz31-kappa100'
+    ]
+    mn_descriptions = [
+        'ns12ns12 (N1, MNmodel2, DZ31, kappa = 10 cm^2/g)',
+        'ns13ns13 (N2, MNmodel2, DZ31, kappa = 10 cm^2/g)',
+        'ns14ns14 (N3, MNmodel2, DZ31, kappa = 10 cm^2/g)',
+        'ns12ns14 (N4, MNmodel2, DZ31, kappa = 10 cm^2/g)',
+        'ns14ns18 (N5, MNmodel2, DZ31, kappa = 10 cm^2/g)',        
+        'ns14b7 (B1, MNmodel2, DZ31, kappa = 10 cm^2/g)',
+        'ns14b7 (B2, MNmodel2, DZ31, kappa = 10 cm^2/g)',
+        'ns12b7 (B3, MNmodel2, DZ31, kappa = 10 cm^2/g)',
+        'ns12b7 (B3, MNmodel2, DZ31, kappa = 100 cm^2/g)',
+    ]
+    for k in xrange(1, 22):
+         mn_names.append('mn-wind%i'%k)
+         kappa = (10 if k in [11, 12] else 1)
+         mn_descriptions.append('wind%i (kappa = %i cm^2/g)'%(k, kappa))
+         if kappa == 1:
+             mn_files.append('SED_wind%i.dat'%k)
+         else:
+             mn_files.append('SED_wind%i_kappa10.dat'%k)
+
     for mn_file, mn_name, mn_description in zip(mn_files, mn_names, mn_descriptions):
         add_model(mn_name, c['mne-rosswog-et-al'], t['Macronova'],
                   description=mn_description, default_amplitude=1.,
