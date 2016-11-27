@@ -56,6 +56,7 @@ def plot_expected(mag, n, labels):
 def plot_redshift(z, n, width=0.01):
     fig = plt.Figure()
     ax = fig.add_subplot(111)
+    width = z[1] - z[0]
     ax.bar(z-width/2., n, width=width)
     
     ax.set_xlim(np.min(z)-width/2., np.max(z)+width/2.)

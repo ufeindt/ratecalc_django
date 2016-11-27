@@ -29,10 +29,11 @@ def get_transient_model(model_type='built-in', **kwargs):
     """
     model = _transient_loaders[model_type](**kwargs)
 
-    model.add_effect(sncosmo.CCM89Dust(), 'mw', 'obs')
     if kwargs.get('host_extinction', False):
         model.add_effect(sncosmo.CCM89Dust(), 'host', 'rest')
-                          
+        model.set(hostr_v=2.)
+    model.add_effect(sncosmo.CCM89Dust(), 'mw', 'obs')
+        
     return model
                           
 def scale_model(model, mag=None, band='bessellb', magsys='vega',

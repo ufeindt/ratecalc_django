@@ -76,15 +76,15 @@ class TransientForm(forms.Form):
         for k in _available_fields.keys():
             if k in kwargs.keys():
                 self.field_defaults[k] = kwargs.pop(k)
-
-        print self.field_defaults
                 
         super(TransientForm, self).__init__(*args, **kwargs)
 
         min_max_vals = {
             'z': (0, None),
             'amplitude': (0, None),
-            'x0': (0, None)
+            'x0': (0, None),
+            'hostebv': (0, None),
+            'mwebv': (0, None),
         }
         self.form_blocks = [['Model parameters']]
         for name, value in zip(self.transient_model.param_names,

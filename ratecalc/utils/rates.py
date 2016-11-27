@@ -189,24 +189,31 @@ class RateCalculator(object):
         
         return np.sum(sh_rate)
 
-    def get_z_dist(self, mag, z_bin=0.01, z_step=1e-3):
+    def get_z_dist(self, mag, z_bin=None, z_step=1e-3):
         """
         """
         self._check_mag_lim_(mag)
 
         z_max = self.f_z_mag(self.mag_lim)
 
-        #print  self.mag_lim
-        #print z_max
-        
         nbins = int(z_max / z_step)
+
         sh_rate, z = shell_rate(0., nbins*z_step, self.ratefunc, nbins, self.cosmo,
                                 time=self.time, area=self.area/100.)
         
         if self.mag_disp is not None:
             sh_rate *= cdf_gauss(mag, self.f_mag_z(z), self.mag_disp)
 
-        z_binedges = np.arange(0, z_max, z_bin)    
+        z_bin = 1e-3
+        nbins = int(z_max / z_bin)
+        multipliers = [2, 2.5, 2]
+        k = 0
+        while nbins > 25:
+            z_bin *= multipliers[k%len(multipliers)]
+            k += 1
+            nbins = int(z_max / z_bin)     
+            
+        z_binedges = np.arange(0, z_max+z_bin, z_bin)    
         n = np.array([np.sum(sh_rate[(z >= z0) & (z < z1)])
                       for z0, z1 in zip(z_binedges[:-1], z_binedges[1:])])
         
@@ -272,16 +279,12 @@ def t_above_lim(model, band, limit, magsys='ab', p_peak=None, m_peak=None,
     
     if _fct_new(model.mintime()) < 0:
         p_0 = model.mintime()
-        #print 'min time'
     else:
-        #p_0 = newton(_fct_new, (model.mintime() + p_peak) / 2)
         p_0 = bisection(_fct_new, model.mintime(), p_peak)
         
     if _fct_new(model.maxtime()) < 0:
         p_1 = model.maxtime()
-        #print 'max time'
     else:
-        #p_1 = newton(_fct_new, (model.maxtime() + p_peak) / 2)
         p_1 = bisection(_fct_new, p_peak, model.maxtime())
         
     return p_0, p_1
