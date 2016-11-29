@@ -1,5 +1,6 @@
 <ul>
   {% if transient_models %}
+    <h4>{{ category.description }}</h4>
     {% for tm in transient_models %}
       <li>
         {{ tm.description }}
@@ -8,7 +9,5 @@
         <a href="{% url 'show_redshift' tm.name %}">Redshift Distribution</a>
       </li>
     {% endfor %}
-  {% else %}
-    <li> <strong>There are no models for this type.</strong></li>
   {% endif %}
 </ul>

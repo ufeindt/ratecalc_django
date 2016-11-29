@@ -2,6 +2,7 @@ import os
 import numpy as np
 import sncosmo
 from scipy.interpolate import RectBivariateSpline as Spline2d
+from scipy.optimize import newton
 
 from rates import _cosmo
 from ratecalc_django.settings import BASE_DIR
@@ -56,6 +57,15 @@ def scale_model(model, mag=None, band='bessellb', magsys='vega',
         return model.get(amp_or_x0)
     return model
 
+def get_z_from_dist(d_l):
+    if d_l == 1e-5:
+        return 0.
+    z_guess = d_l * _cosmo.H0.value / 3e5
+
+    f_newton = lambda z: _cosmo.luminosity_distance(z).value - d_l
+
+    return np.round(newton(f_newton, z_guess), 7)
+    
 class TimeSeriesSource(sncosmo.Source):
     """A single-component spectral time series model.
     The spectral flux density of this model is given by

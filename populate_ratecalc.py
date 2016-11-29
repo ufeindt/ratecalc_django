@@ -18,8 +18,14 @@ def populate():
         'description': 'Macronova SEDs from Rosswog et al. (in prep.)',
         'model_type': 'load-file'
     }
+
+    c = {}
+    for name, kw in categories.items():
+        c[name] = add_category(name, **kw)
+
     
     types = odict()
+    types['Macronova'] = {'sig_m_B_max': 0., 'rate': 3e-7}
     types['SN Ia'] = {'m_B_max': -19.25, 'sig_m_B_max': 0.5, 'rate': 3e-5}
     types['SN Ib'] = {'m_B_max': -17.45, 'sig_m_B_max': 1.12, 'rate': 1e-5}
     types['SN Ic'] = {'m_B_max': -17.66, 'sig_m_B_max': 1.18, 'rate': 1e-5}
@@ -27,80 +33,11 @@ def populate():
     #types['SN IIL'] = {'m_B_max': -17.98, 'sig_m_B_max': 0.86, 'rate': 1e-5}
     types['SN IIP'] = {'m_B_max': -16.75, 'sig_m_B_max': 0.98, 'rate': 1.5e-4}
     types['SN IIn'] = {'m_B_max': -18.53, 'sig_m_B_max': 1.36, 'rate': 1e-5}
-    types['Macronova'] = {'sig_m_B_max': 0., 'rate': 3e-7}
-            
-    models = odict()
-    models['salt2'] = {
-        'description': 'SALT2.4',
-        'sncosmo_name': 'salt2',
-        'sncosmo_version': '2.4',
-        'transient_type': 'SN Ia',
-        'category': 'sncosmo-built-in',
-        'host_extinction': False,
-    }
-
-    snana_names = [
-        '2004fe', '2004gq', 'sdss004012', '2006fo', 'sdss014475',
-        '2006lc', '04d1la', '04d4jv', '2004gv', '2006ep',
-        '2007y', '2004ib', '2005hm', '2006jo', '2007nc',
-        '2004hx', '2005gi', '2006gq', '2006kn', '2006jl',
-        '2006iw', '2006kv', '2006ns', '2007iz', '2007nr',
-        '2007kw', '2007ky', '2007lj', '2007lb', '2007ll',
-        '2007nw', '2007ld', '2007md', '2007lz', '2007lx',
-        '2007og', '2007ny', '2007nv', '2007pg', '2006ez',
-        '2006ix', 
-    ]
-    snana_types = [
-        'SN Ic', 'SN Ic', 'SN Ic', 'SN Ic', 'SN Ic',
-        'SN Ic', 'SN Ic', 'SN Ic', 'SN Ib', 'SN Ib',
-        'SN Ib', 'SN Ib', 'SN Ib', 'SN Ib', 'SN Ib',
-        'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP',
-        'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP',
-        'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP',
-        'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP',
-        'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP', 'SN IIn',
-        'SN IIn',
-    ]
-
-    for snana_name, snana_type in zip(snana_names, snana_types):
-        models['snana-%s'%snana_name] = {
-            'description':  'SNANA %s'%snana_name,
-            'sncosmo_name': 'snana-%s'%snana_name,
-            'sncosmo_version': '1.0',
-            'transient_type': snana_type,
-            'category': 'sncosmo-built-in',
-        }
-
-    s11_names = [
-        '2005lc', '2005hl', '2005hm', '2005gi', '2006fo',
-        '2006jo', '2006jl', 
-    ]
-    s11_types = [
-        'SN IIP', 'SN Ib', 'SN Ib', 'SN IIP', 'SN Ic',
-        'SN Ib', 'SN IIP',
-    ]
-
-    for s11_name, s11_type in zip(s11_names, s11_types):
-        models['s11-%s'%s11_name] = {
-            'description':  'S11 %s'%s11_name,
-            'sncosmo_name': 's11-%s'%s11_name,
-            'sncosmo_version': '1.0',
-            'transient_type': s11_type,
-            'category': 'sncosmo-built-in',
-        }
-    
-    c = {}
-    for name, kw in categories.items():
-        c[name] = add_category(name, **kw)
 
     t = {}
     for name, kw in types.items():
         t[name] = add_type(name, **kw)
     
-    for name, kw in models.items():
-        print("- {0}".format(name))
-        add_model(name, c[kw.pop('category')], t[kw.pop('transient_type')], **kw)
-
     mn_dir = 'ratecalc/utils/macronova'
     mn_files = [
         'SED_ns12ns12_kappa10.dat',
@@ -193,13 +130,74 @@ def populate():
              mn_files.append('SED_wind%i_kappa10.dat'%k)
 
     for mn_file, mn_name, mn_description in zip(mn_files, mn_names, mn_descriptions):
+        print("- {0}".format(mn_name))
         add_model(mn_name, c['mne-rosswog-et-al'], t['Macronova'],
                   description=mn_description, default_amplitude=1.,
                   model_file='%s/%s'%(mn_dir, mn_file))
+
+    models = odict()
+    models['salt2'] = {
+        'description': 'SALT2.4',
+        'sncosmo_name': 'salt2',
+        'sncosmo_version': '2.4',
+        'transient_type': 'SN Ia',
+        'category': 'sncosmo-built-in',
+        'host_extinction': False,
+    }
+
+    snana_names = [
+        '2004fe', '2004gq', 'sdss004012', '2006fo', 'sdss014475',
+        '2006lc', '04d1la', '04d4jv', '2004gv', '2006ep',
+        '2007y', '2004ib', '2005hm', '2006jo', '2007nc',
+        '2004hx', '2005gi', '2006gq', '2006kn', '2006jl',
+        '2006iw', '2006kv', '2006ns', '2007iz', '2007nr',
+        '2007kw', '2007ky', '2007lj', '2007lb', '2007ll',
+        '2007nw', '2007ld', '2007md', '2007lz', '2007lx',
+        '2007og', '2007ny', '2007nv', '2007pg', '2006ez',
+        '2006ix', 
+    ]
+    snana_types = [
+        'SN Ic', 'SN Ic', 'SN Ic', 'SN Ic', 'SN Ic',
+        'SN Ic', 'SN Ic', 'SN Ic', 'SN Ib', 'SN Ib',
+        'SN Ib', 'SN Ib', 'SN Ib', 'SN Ib', 'SN Ib',
+        'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP',
+        'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP',
+        'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP',
+        'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP',
+        'SN IIP', 'SN IIP', 'SN IIP', 'SN IIP', 'SN IIn',
+        'SN IIn',
+    ]
+
+    for snana_name, snana_type in zip(snana_names, snana_types):
+        models['snana-%s'%snana_name] = {
+            'description':  'SNANA %s'%snana_name,
+            'sncosmo_name': 'snana-%s'%snana_name,
+            'sncosmo_version': '1.0',
+            'transient_type': snana_type,
+            'category': 'sncosmo-built-in',
+        }
+
+    s11_names = [
+        '2005lc', '2005hl', '2005hm', '2005gi', '2006fo',
+        '2006jo', '2006jl', 
+    ]
+    s11_types = [
+        'SN IIP', 'SN Ib', 'SN Ib', 'SN IIP', 'SN Ic',
+        'SN Ib', 'SN IIP',
+    ]
+
+    for s11_name, s11_type in zip(s11_names, s11_types):
+        models['s11-%s'%s11_name] = {
+            'description':  'S11 %s'%s11_name,
+            'sncosmo_name': 's11-%s'%s11_name,
+            'sncosmo_version': '1.0',
+            'transient_type': s11_type,
+            'category': 'sncosmo-built-in',
+        }
         
-    # Print out the categories we have added.
-    for tm in TransientModel.objects.all():
-            print("- {0}".format(str(tm)))
+    for name, kw in models.items():
+        print("- {0}".format(name))
+        add_model(name, c[kw.pop('category')], t[kw.pop('transient_type')], **kw)
 
 def add_category(name, **kwargs):
     c = Category.objects.get_or_create(name=name, **kwargs)[0]

@@ -2,6 +2,7 @@ import copy
 
 from django import forms
 from django.utils.safestring import mark_safe
+from utils.rates import _cosmo
 #from ratecalc.models import TransientModels
 
 _magsys = (
@@ -36,6 +37,7 @@ _band_dict = {k: v for k, v in _bands}
 
 _scaling_choices = (
     ('z', 'by redshift'),
+    ('d_l', 'by distance'),
     ('abs_mag', 'to M_peak'),
 )
 
@@ -58,6 +60,8 @@ _available_fields = {
     'area': forms.FloatField(initial=100.,  min_value=0.,
                              max_value=100., help_text='Area [% of sky]'),
     'time': forms.FloatField(initial=365.25, help_text='Time [days]'),
+    'distance': forms.FloatField(initial=1e-5,  min_value=1e-5,
+                             help_text='Distance [Mpc]'),
 }
 
 class TransientForm(forms.Form):
@@ -108,6 +112,10 @@ class TransientForm(forms.Form):
                 self.fields['magsys%i'%k] = copy.copy(_available_fields['magsys'])
                 band_block.append(['f:band%i'%k,'f:magsys%i'%k])
 
+        if self.scale_mode == 'lc':
+            self.fields['distance'] = copy.copy(_available_fields['distance'])
+            self.form_blocks[-1].append(['f:distance'])
+            
         if self.scale_mode in ['lc', 'rate']:
             self.fields['scale_amplitude'] = copy.copy(
                 _available_fields['scale_amplitude']
@@ -121,7 +129,7 @@ class TransientForm(forms.Form):
                 _available_fields['scaling_mode']
             )
             self.form_blocks[-1].append(['f:scaling_mode'])
-            
+        
         if self.scale_mode in ['lc', 'rate']:
             self.fields['mag_max'] = copy.copy(_available_fields['mag_max'])
             self.fields['band_max'] = copy.copy(_available_fields['first_band'])
@@ -177,3 +185,19 @@ class TransientForm(forms.Form):
     def yield_block(self, block):
         for field in block:
             yield field
+
+    # def clean_distance(self):
+    #     print 'cleaning distance'
+    #     data = self.cleaned_data['distance']
+
+    #     print type(self.cleaned_data['distance'])
+    #     if self.data.get('scaling_mode', None) == 'z':
+    #         z = self.cleaned_data['z']
+    #         if z > 0.:
+    #             d_l = _cosmo.luminosity_distance(z).value
+    #             print d_l
+    #             data = d_l
+    #         else:
+    #             data = 1e-5
+        
+    #     return data

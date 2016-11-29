@@ -11,13 +11,15 @@
     <div>
       {% if transient_models %}
         <h3>Available Models</h3>
-        <p>(click transient type to reveal models)</p>
+        <p>(click on transient type to reveal models)</p>
           {% for t in types %}
           <span style="cursor: pointer;" onclick="spoilerBody = typeof this.nextSibling.tagName != 'undefined' ? this.nextSibling : this.nextSibling.nextSibling; spoilerBody.style.display = 'block' == spoilerBody.style.display ? 'none' : 'block';">
             <strong>{{ t }}</strong>
           </span>
           <div style="display: none;">
-            {% get_tm_list t %}
+            {% for c in cats %}
+              {% get_tm_list t c %}
+            {% endfor %}
           </div><br/>
         {% endfor %}
       {% else %}

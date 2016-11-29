@@ -4,13 +4,13 @@ import numpy as np
 from django.shortcuts     import render
 from django.core.urlresolvers import resolve
 
-from ratecalc.models      import TransientModel, TransientType
+from ratecalc.models      import TransientModel, TransientType, Category
 from ratecalc.forms       import TransientForm, _band_dict
 
 from utils.lightcurve     import get_lightcurves
 from utils.plot           import plot_lightcurve, plot_expected, plot_redshift
 from utils.rates          import RateCalculator
-from utils.transientmodel import get_transient_model, scale_model
+from utils.transientmodel import get_transient_model, scale_model, get_z_from_dist
 
 
 # Create your views here.
@@ -18,8 +18,10 @@ from utils.transientmodel import get_transient_model, scale_model
 def index(request):
     tm_list = TransientModel.objects.all()
     type_list = TransientType.objects.all()
+    cat_list = Category.objects.all()
     
-    context_dict = {'transient_models': tm_list, 'types': type_list}
+    context_dict = {'transient_models': tm_list, 'types': type_list,
+                    'cats': cat_list}
     
     return render(request, 'ratecalc/index.html', context=context_dict)
 
@@ -47,7 +49,20 @@ def show_lightcurve(request, tm_name, n_bands=5):
     transient_model = context['calc_args'][0]
     if context['scale_opt']['scale_amplitude']:
         if context['scale_opt']['scaling_mode'] == 'z':
+            #z = transient_model.get('z')
+            #if z > 0.:
+            #    d_l = _cosmo.luminosity_distance(z).value
+            #    print d_l
+            #    context['form'].data['distance'] = d_l
+            #else:
+            #    context['form'].fields['distance'].initial = 1e-5
             transient_model = scale_model(transient_model)
+        elif context['scale_opt']['scaling_mode'] == 'd_l':
+            z = get_z_from_dist(context['calc_kw']['distance'])
+            transient_model.set(z=z)
+            transient_model = scale_model(transient_model)
+            if 'cleaned_data' in context['form'].__dict__.keys():
+                context['form'].fields['z'].initial = z
         elif context['scale_opt']['scaling_mode'] == 'abs_mag':
             transient_model = scale_model(
                 transient_model,
