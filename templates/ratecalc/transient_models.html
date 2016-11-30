@@ -1,6 +1,6 @@
 <ul>
   {% if transient_models %}
-    <h4>{{ category.description }}</h4>
+    <h4>{{ category.description|safe }}</h4>
     {% for tm in transient_models %}
       <li>
         {{ tm.description }}

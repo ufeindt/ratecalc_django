@@ -42,6 +42,12 @@
           {{ plot }}
         {% endautoescape %}
       </div>
+      <span style="cursor: pointer;" onclick="spoilerBody = typeof this.nextSibling.tagName != 'undefined' ? this.nextSibling : this.nextSibling.nextSibling; spoilerBody.style.display = 'block' == spoilerBody.style.display ? 'none' : 'block';">
+        Show data (click to reveal)
+      </span>
+      <pre style="line-height: 1.25; white-space: pre; display: none;">
+{{ plot_data }}
+      </pre>
     {% else %}
       No transient model of that name is registered.
     {% endif %}

@@ -6,7 +6,7 @@ from django.db import models
 
 class Category(models.Model):
     name = models.CharField(max_length=64, unique=True)
-    description = models.CharField(max_length=256)
+    description = models.CharField(max_length=512)
     model_type = models.CharField(max_length=128)
     
     class Meta:

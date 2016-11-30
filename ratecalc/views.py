@@ -3,15 +3,19 @@ import numpy as np
 
 from django.shortcuts     import render
 from django.core.urlresolvers import resolve
+from django.utils.safestring import mark_safe
 
 from ratecalc.models      import TransientModel, TransientType, Category
 from ratecalc.forms       import TransientForm, _band_dict
 
 from utils.lightcurve     import get_lightcurves
 from utils.plot           import plot_lightcurve, plot_expected, plot_redshift
+from utils.formatdata     import (format_lightcurve_data, format_expected_data,
+                                  format_redshift_data)
 from utils.rates          import RateCalculator
 from utils.transientmodel import get_transient_model, scale_model, get_z_from_dist
 
+_base_onload = "document.getElementById('id_{}').value = {};"
 
 # Create your views here.
 
@@ -74,10 +78,13 @@ def show_lightcurve(request, tm_name, n_bands=5):
     try:
         phase, mags = get_lightcurves(transient_model, bands, magsys)
         plot = plot_lightcurve(phase, mags, labels)
+        plot_data = format_lightcurve_data(phase, mags, labels)
     except ValueError as e:
         plot = 'Error: %s'%e
+        plot_data = 'None'
         
     context['plot'] = plot
+    context['plot_data'] = plot_data
         
     return render(request, 'ratecalc/form_plot.html', context)
     
@@ -115,9 +122,11 @@ def show_expected(request, tm_name, n_bands=5):
             labels.append(_band_dict[calc.band])
     
     plot = plot_expected(mag, n, labels)
-
+    plot_data = format_expected_data(mag, n, labels)
+    
     context['plot'] = plot
-        
+    context['plot_data'] = plot_data
+    
     return render(request, 'ratecalc/form_plot.html', context)
 
 def show_redshift(request, tm_name):
@@ -132,8 +141,10 @@ def show_redshift(request, tm_name):
     
     z, n = calc.get_z_dist(context['calc_kw']['mag_lim'])
     plot = plot_redshift(z, n)
-
+    plot_data = format_redshift_data(z, n)
+    
     context['plot'] = plot
+    context['plot_data'] = plot_data
         
     return render(request, 'ratecalc/form_plot.html', context)
     
@@ -194,7 +205,7 @@ def get_calc(request, tm_name, include_fields, mag_start=None, hide_param=None,
     else:
         for k, v in kw.items():
             calc_kw[k] = v
-
+            
     rate = calc_kw.pop('rate')
     calc_kw['ratefunc'] = lambda z: rate
 

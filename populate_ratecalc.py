@@ -11,11 +11,14 @@ from collections import OrderedDict as odict
 def populate():
     categories = odict()
     categories['sncosmo-built-in'] = {
-        'description': 'sncosmo built-in models',
+        'description': 'sncosmo built-in models (see '
+        '<a href="http://sncosmo.readthedocs.io/en/latest/source-list.html">here</a> '
+        'for list of sources)',
         'model_type': 'built-in'
     }
     categories['mne-rosswog-et-al'] = {
-        'description': 'Macronova SEDs from Rosswog et al. (in prep.)',
+        'description': 'Macronova SEDs from Rosswog et al. (2016) '
+        '[<a href="https://arxiv.org/abs/1611.09822">arXiv:1611.09822</a>]',
         'model_type': 'load-file'
     }
 
