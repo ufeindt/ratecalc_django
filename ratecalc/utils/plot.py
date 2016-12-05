@@ -6,7 +6,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
-def plot_lightcurve(phase, mags, labels, mag_cut=20):
+def plot_lightcurve(phase, mags, labels, mag_cut=8, log_t=False):
     fig = plt.Figure()
     ax = fig.add_subplot(111)
     for m_, l_ in zip(mags, labels):
@@ -25,6 +25,9 @@ def plot_lightcurve(phase, mags, labels, mag_cut=20):
     ax.set_xlabel(r'$t - t_0 \mathrm{[days]}$', fontsize='x-large')
     ax.set_ylabel(r'mag', fontsize='x-large')
 
+    if log_t is True:
+        ax.set_xscale('log')
+    
     ax.legend(loc='upper center',
               bbox_to_anchor=(.5, 1.15),
               ncol=len(labels))

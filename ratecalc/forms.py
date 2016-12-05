@@ -61,7 +61,16 @@ _available_fields = {
                              max_value=100., help_text='Area [% of sky]'),
     'time': forms.FloatField(initial=365.25, help_text='Time [days]'),
     'distance': forms.FloatField(initial=1e-5,  min_value=1e-5,
-                             help_text='Distance [Mpc]'),
+                                 help_text='Distance [Mpc]'),
+    'adjust_plot': forms.BooleanField(required=False, initial=False,
+                                      help_text='Adjust plot'),
+    't_min': forms.FloatField(initial=0, help_text='t_min [days]'),
+    't_max': forms.FloatField(initial=0, help_text='t_max [days]'),
+    'mag_range': forms.FloatField(initial=8,
+                                  help_text='mag range (w.r.t. peak)'),
+    'log_t': forms.BooleanField(required=False, initial=False,
+                                help_text='Logarithmic time scale'),
+    'n_points': forms.FloatField(initial=100, help_text='n_points'),
 }
 
 class TransientForm(forms.Form):
@@ -74,7 +83,6 @@ class TransientForm(forms.Form):
         self.n_bands = kwargs.pop('n_bands', 1)
         self.include_fields = kwargs.pop('include_fields')
         self.scale_mode = kwargs.pop('scale_mode', 'lc')
-
         
         self.field_defaults = {}
         for k in _available_fields.keys():
@@ -151,6 +159,30 @@ class TransientForm(forms.Form):
                 if name in self.field_defaults.keys():
                     self.fields[name].initial = self.field_defaults[name]
 
+        if self.scale_mode == 'lc':
+            self.form_blocks.append(['Plot options', ['f:adjust_plot'],
+                                     ['f:t_min'], ['f:t_max'], ['f:mag_range'],
+                                     ['f:n_points']])
+
+            self.fields['adjust_plot'] = copy.copy(_available_fields['adjust_plot'])
+            
+            self.fields['t_min'] = copy.copy(_available_fields['t_min'])
+            self.fields['t_min'].min_value = self.transient_model.mintime()
+            self.fields['t_min'].max_value = self.transient_model.maxtime()
+            self.fields['t_min'].initial = self.transient_model.mintime()
+            
+            self.fields['t_max'] = copy.copy(_available_fields['t_max'])
+            self.fields['t_max'].min_value = self.transient_model.mintime()
+            self.fields['t_max'].max_value = self.transient_model.maxtime()
+            self.fields['t_max'].initial = self.transient_model.maxtime()
+            
+            self.fields['mag_range'] = copy.copy(_available_fields['mag_range'])
+            self.fields['n_points'] = copy.copy(_available_fields['n_points'])
+            
+            if self.transient_model.mintime() > 0.:
+                self.form_blocks[-1].append(['f:log_t'])
+                self.fields['log_t'] = copy.copy(_available_fields['log_t'])
+            
     def headers(self):
         for block in self.form_blocks:
             yield block[0]

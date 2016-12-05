@@ -75,10 +75,17 @@ def show_lightcurve(request, tm_name, n_bands=5):
                 magsys=context['calc_kw']['mag_max'][2]
             )
 
+    log_t = context['calc_kw'].pop('log_t', False)
+    n_points = context['calc_kw'].pop('n_points', 100)
+    mag_cut = context['calc_kw'].pop('mag_range', 8)
+    t_range = (context['calc_kw'].pop('t_min', transient_model.mintime()),
+               context['calc_kw'].pop('t_max', transient_model.maxtime()))
+            
     try:
-        phase, mags = get_lightcurves(transient_model, bands, magsys)
-        plot = plot_lightcurve(phase, mags, labels)
-        plot_data = format_lightcurve_data(phase, mags, labels)
+        phase, mags = get_lightcurves(transient_model, bands, magsys,
+                                      t_range, log_t, n_points)
+        plot = plot_lightcurve(phase, mags, labels, mag_cut, log_t)
+        plot_data = format_lightcurve_data(phase, mags, labels, log_t)
     except ValueError as e:
         plot = 'Error: %s'%e
         plot_data = 'None'

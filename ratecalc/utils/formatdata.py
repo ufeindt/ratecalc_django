@@ -1,5 +1,8 @@
-def format_lightcurve_data(phase, mags, labels):
-    format_str = '{:>8.3f}   '
+def format_lightcurve_data(phase, mags, labels, log_t=False):
+    if log_t is True:
+        format_str = '{:>8.3e}   '
+    else:
+        format_str = '{:>8.3f}   '
     format_str += '   '.join(['{:>7.2f}' for k in range(len(labels))])
     out = ['# time    ' + '    '.join(labels)]
     for k in xrange(len(phase)):
