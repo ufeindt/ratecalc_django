@@ -10,9 +10,13 @@ def get_lightcurves(model, bands, magsys, t_range=None, log_t=False, n_points=10
         t_range = (model.mintime(), model.maxtime())
     
     p_interp = model._source._phase * (1 + model.get('z'))
-    p_range = (p_interp[p_interp <= t_range[0]][-1],
-               p_interp[p_interp >= t_range[1]][0])
-    p_interp = p_interp[(p_interp >= p_range[0]) & (p_interp <= p_range[1])]
+    p0 = (p_interp[p_interp <= t_range[0]][-1]
+          if np.any(p_interp <= t_range[0])
+          else model.mintime()) 
+    p1 = (p_interp[p_interp >= t_range[1]][-1]
+          if np.any(p_interp >= t_range[1])
+          else model.maxtime())
+    p_interp = p_interp[(p_interp >= p0) & (p_interp <= p1)]
 
     if log_t is False:
         phase = np.linspace(t_range[0], t_range[1], n_points)
