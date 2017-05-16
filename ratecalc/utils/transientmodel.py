@@ -121,21 +121,35 @@ class TimeSeriesSource(sncosmo.Source):
 
         return f
     
-def load_sed_model(filename, p_min=1e-3, p_max=50, **kwargs):
+def load_sed_model(filename, p_min=5e-4, p_max=50, **kwargs):
     """
     """
-    sed = np.genfromtxt(filename)
+    # sed = np.genfromtxt(filename)
 
-    phase = np.unique(sed[:,0])
-    if p_min is not None:
-        phase = phase[(phase >= p_min)]
-    if p_max is not None:
-        phase = phase[(phase <= p_max)]
+    # phase = np.unique(sed[:,0])
+    # if p_min is not None:
+    #     phase = phase[(phase >= p_min)]
+    # if p_max is not None:
+    #     phase = phase[(phase <= p_max)]
         
-    wave = sed[sed[:,0] == phase[0]][:,1]
-    # Spectral flux density is in [erg s^-1 cm^-3] but need [erg s^-1 cm^-2 Angstrom^-1]
-    # Multiply by 1e-8
-    flux = np.array([sed[sed[:,0] == p,2] for p in phase]) * 1e-8
-    source = TimeSeriesSource(phase, wave, flux, **kwargs)
+    # wave = sed[sed[:,0] == phase[0]][:,1]
+    # # Spectral flux density is in [erg s^-1 cm^-3] but need [erg s^-1 cm^-2 Angstrom^-1]
+    # # Multiply by 1e-8
+    # flux = np.array([sed[sed[:,0] == p,2] for p in phase]) * 1e-8
+
+    phase, wave, flux = sncosmo.read_griddata_ascii(filename)
+
+    k0, k1 = 0, -1
+    if p_min is not None:
+        if phase[0] < p_min:
+            k0 = np.where(phase < p_min)[0][-1] + 1
+
+    if p_max is not None:
+        if phase[-1] > p_max:
+            k1 = np.where(phase > p_max)[0][0]
+
+    print k0, k1
+
+    source = TimeSeriesSource(phase[k0:k1], wave, flux[k0:k1], **kwargs)
 
     return sncosmo.Model(source=source)

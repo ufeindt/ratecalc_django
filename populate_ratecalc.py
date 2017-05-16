@@ -17,15 +17,31 @@ def populate():
         'model_type': 'built-in'
     }
     categories['mne-rosswog-et-al'] = {
-        'description': 'Macronova SEDs from Rosswog et al. (2016) '
-        '[<a href="https://arxiv.org/abs/1611.09822">arXiv:1611.09822</a>]',
+        'description': 'Macronova SEDs from  '
+        '<a href="http://adsabs.harvard.edu/abs/2017CQGra..34j4001R">Rosswog et al. (2017)</a>; '
+        'all SEDs are available <a href="https://github.com/ufeindt/macronovae-rosswog">here</a> '
+        'or at the indivdual links below </br></br> '
+        '<small>Dynamic ejecta (MNmodel1, FRDM, kappa = 10 cm^2/g)</small>',
         'model_type': 'load-file'
     }
+    categories['mne-rosswog-et-al-2'] = {
+        'description': '<small>Dynamic ejecta (MNmodel2, FRDM, kappa = 10 cm^2/g)</small>',
+        'model_type': 'load-file'
+    }
+    categories['mne-rosswog-et-al-3'] = {
+        'description': '<small>Dynamic ejecta (MNmodel2, DZ31, kappa = 10 cm^2/g unless '
+        'noted otherwise)</small>',
+        'model_type': 'load-file'
+    }
+    categories['mne-rosswog-et-al-4'] = {
+        'description': '<small>Winds (kappa = 1 cm^2/g unless noted otherwise)</small>',
+        'model_type': 'load-file'
+    }
+
 
     c = {}
     for name, kw in categories.items():
         c[name] = add_category(name, **kw)
-
     
     types = odict()
     types['Macronova'] = {'sig_m_B_max': 0., 'rate': 3e-7}
@@ -41,7 +57,10 @@ def populate():
     for name, kw in types.items():
         t[name] = add_type(name, **kw)
     
-    mn_dir = 'ratecalc/utils/macronova'
+    mn_dir = 'static/macronovae-rosswog/data'
+    mn_cats = [None, None, None, None, None, None, None, None,
+               2, 2, 2, 2, 2, 2, 2, 2,
+               3, 3, 3, 3, 3, 3, 3, 3, 3]
     mn_files = [
         'SED_ns12ns12_kappa10.dat',
         'SED_ns13ns13_kappa10.dat',
@@ -97,45 +116,63 @@ def populate():
         'mn-nsbh3-dz31-kappa100'
     ]
     mn_descriptions = [
-        'ns12ns12 (N1, MNmodel1, FRDM, kappa = 10 cm^2/g)',
-        'ns13ns13 (N2, MNmodel1, FRDM, kappa = 10 cm^2/g)',
-        'ns14ns14 (N3, MNmodel1, FRDM, kappa = 10 cm^2/g)',
-        'ns12ns14 (N4, MNmodel1, FRDM, kappa = 10 cm^2/g)',
-        'ns14ns18 (N5, MNmodel1, FRDM, kappa = 10 cm^2/g)',        
-        'ns14b7 (B1, MNmodel1, FRDM, kappa = 10 cm^2/g)',
-        'ns14b7 (B2, MNmodel1, FRDM, kappa = 10 cm^2/g)',
-        'ns12b7 (B3, MNmodel1, FRDM, kappa = 10 cm^2/g)',
-        'ns12ns12 (N1, MNmodel2, FRDM, kappa = 10 cm^2/g)',
-        'ns13ns13 (N2, MNmodel2, FRDM, kappa = 10 cm^2/g)',
-        'ns14ns14 (N3, MNmodel2, FRDM, kappa = 10 cm^2/g)',
-        'ns12ns14 (N4, MNmodel2, FRDM, kappa = 10 cm^2/g)',
-        'ns14ns18 (N5, MNmodel2, FRDM, kappa = 10 cm^2/g)',        
-        'ns14b7 (B1, MNmodel2, FRDM, kappa = 10 cm^2/g)',
-        'ns14b7 (B2, MNmodel2, FRDM, kappa = 10 cm^2/g)',
-        'ns12b7 (B3, MNmodel2, FRDM, kappa = 10 cm^2/g)',
-        'ns12ns12 (N1, MNmodel2, DZ31, kappa = 10 cm^2/g)',
-        'ns13ns13 (N2, MNmodel2, DZ31, kappa = 10 cm^2/g)',
-        'ns14ns14 (N3, MNmodel2, DZ31, kappa = 10 cm^2/g)',
-        'ns12ns14 (N4, MNmodel2, DZ31, kappa = 10 cm^2/g)',
-        'ns14ns18 (N5, MNmodel2, DZ31, kappa = 10 cm^2/g)',        
-        'ns14b7 (B1, MNmodel2, DZ31, kappa = 10 cm^2/g)',
-        'ns14b7 (B2, MNmodel2, DZ31, kappa = 10 cm^2/g)',
-        'ns12b7 (B3, MNmodel2, DZ31, kappa = 10 cm^2/g)',
-        'ns12b7 (B3, MNmodel2, DZ31, kappa = 100 cm^2/g)',
+        'ns12ns12 (N1, m_ej = 0.0079 M_sun, v_ ej =  0.12 c)',
+        'ns13ns13 (N2, m_ej = 0.0126 M_sun, v_ ej =  0.11 c)',
+        'ns14ns14 (N3, m_ej = 0.0084 M_sun, v_ ej =  0.11 c)',
+        'ns12ns14 (N4, m_ej = 0.0159 M_sun, v_ ej =  0.11 c)',
+        'ns14ns18 (N5, m_ej = 0.0340 M_sun, v_ ej =  0.12 c)',        
+        'ns14b7 (B1, m_ej = 0.04 M_sun, v_ ej =  0.20 c)',
+        'ns14b7 (B2, m_ej = 0.07 M_sun, v_ ej =  0.18 c)',
+        'ns12b7 (B3, m_ej = 0.16 M_sun, v_ ej =  0.25 c)',
+        'ns12ns12 (N1, m_ej = 0.0079 M_sun, v_ ej =  0.12 c)',
+        'ns13ns13 (N2, m_ej = 0.0126 M_sun, v_ ej =  0.11 c)',
+        'ns14ns14 (N3, m_ej = 0.0084 M_sun, v_ ej =  0.11 c)',
+        'ns12ns14 (N4, m_ej = 0.0159 M_sun, v_ ej =  0.11 c)',
+        'ns14ns18 (N5, m_ej = 0.034  M_sun, v_ ej =  0.12 c)',        
+        'ns14b7 (B1, m_ej = 0.04 M_sun, v_ ej =  0.20 c)',
+        'ns14b7 (B2, m_ej = 0.07 M_sun, v_ ej =  0.18 c)',
+        'ns12b7 (B3, m_ej = 0.16 M_sun, v_ ej =  0.25 c)',
+        'ns12ns12 (N1, m_ej = 0.0079 M_sun, v_ ej =  0.12 c)',
+        'ns13ns13 (N2, m_ej = 0.0126 M_sun, v_ ej =  0.11 c)',
+        'ns14ns14 (N3, m_ej = 0.0084 M_sun, v_ ej =  0.11 c)',
+        'ns12ns14 (N4, m_ej = 0.0159 M_sun, v_ ej =  0.11 c)',
+        'ns14ns18 (N5, m_ej = 0.034  M_sun, v_ ej =  0.12 c)',        
+        'ns14b7 (B1, m_ej = 0.04 M_sun, v_ ej =  0.20 c)',
+        'ns14b7 (B2, m_ej = 0.07 M_sun, v_ ej =  0.18 c)',
+        'ns12b7 (B3, m_ej = 0.16 M_sun, v_ ej =  0.25 c)',
+        'ns12b7 (B3, m_ej = 0.16 M_sun, v_ ej =  0.25 c, kappa = 100 cm^2/g)',
     ]
+
+    m_ = [0.01, 0.01, 0.01, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1,
+          0.01, 0.01, 0.01, 0.1,  0.1,  0.2,  0.2,  0.2,  0.01,
+          0.05, 0.1,  0.2]
+    v_ = [0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.1,  0.01, 0.1,
+          0.1,  0.25, 0.5,  0.01, 0.05, 0.01, 0.05, 0.1,  0.01,
+          0.25, 0.25, 0.25]
     for k in xrange(1, 22):
          mn_names.append('mn-wind%i'%k)
+         mn_cats.append(4)
          kappa = (10 if k in [11, 12] else 1)
-         mn_descriptions.append('wind%i (kappa = %i cm^2/g)'%(k, kappa))
          if kappa == 1:
+             mn_descriptions.append('wind%i (m_ej = %.2f M_sun, v_ej = %.2f c)'%(
+                 k, m_[k-1], v_[k-1]
+             ))
              mn_files.append('SED_wind%i.dat'%k)
          else:
+             mn_descriptions.append('wind%i (m_ej = %.2f M_sun, v_ej = %.2f c, kappa = %i cm^2/g)'%(
+                 k, m_[k-1], v_[k-1], kappa
+             ))
              mn_files.append('SED_wind%i_kappa10.dat'%k)
 
-    for mn_file, mn_name, mn_description in zip(mn_files, mn_names, mn_descriptions):
+    for mn_file, mn_cat, mn_name, mn_description in zip(mn_files,
+                                                        mn_cats,
+                                                        mn_names,
+                                                        mn_descriptions):
         print("- {0}".format(mn_name))
-        add_model(mn_name, c['mne-rosswog-et-al'], t['Macronova'],
-                  description=mn_description, default_amplitude=1.,
+        cat_ = c['mne-rosswog-et-al%s'%('-%i'%mn_cat if mn_cat is not None else '')]
+        add_model(mn_name, cat_, t['Macronova'],
+                  description='%s'%(mn_description),
+                  default_amplitude=1.,
                   model_file='%s/%s'%(mn_dir, mn_file))
 
     models = odict()
