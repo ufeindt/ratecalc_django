@@ -39,6 +39,7 @@ class TransientModel(models.Model):
     sncosmo_name = models.CharField(max_length=128)
     sncosmo_version = models.CharField(max_length=16)
     model_file = models.CharField(max_length=256)
+    model_download = models.CharField(max_length=512)
     host_extinction = models.BooleanField(default=True)
     default_amplitude = models.FloatField(default=1)
     

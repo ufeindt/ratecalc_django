@@ -164,6 +164,7 @@ def populate():
              ))
              mn_files.append('SED_wind%i_kappa10.dat'%k)
 
+    url_dl = 'https://raw.githubusercontent.com/ufeindt/macronovae-rosswog/master/data/'
     for mn_file, mn_cat, mn_name, mn_description in zip(mn_files,
                                                         mn_cats,
                                                         mn_names,
@@ -173,7 +174,8 @@ def populate():
         add_model(mn_name, cat_, t['Macronova'],
                   description='%s'%(mn_description),
                   default_amplitude=1.,
-                  model_file='%s/%s'%(mn_dir, mn_file))
+                  model_file='%s/%s'%(mn_dir, mn_file),
+                  model_download='%s%s'%(url_dl, mn_file))
 
     models = odict()
     models['salt2'] = {
