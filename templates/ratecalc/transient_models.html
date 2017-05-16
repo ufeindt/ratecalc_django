@@ -4,7 +4,9 @@
     {% for tm in transient_models %}
     <li>
         {{ tm.description }}
-        <a href="{{ tm.model_download}}">SED</a>
+        {% if tm.model_download %}
+          <a href="{{ tm.model_download}}">SED</a>
+        {% endif %}
         <a href="{% url 'show_lightcurve' tm.name %}">Lightcurve</a>
         <a href="{% url 'show_expected' tm.name %}">Expected Rate</a>
         <a href="{% url 'show_redshift' tm.name %}">Redshift Distribution</a>
