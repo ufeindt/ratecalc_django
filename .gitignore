@@ -5,4 +5,3 @@ myvenv
 db.sqlite3
 ratecalc/migrations
 /static
-ratecalc/utils/macronova
